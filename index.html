@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova Assault</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+}
+
+#crosshair {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    color: white;
+    font-size: 30px;
+    transform: translate(-50%, -50%);
+    user-select: none;
+}
+</style>
+</head>
+<body>
+
+<div id="crosshair">+</div>
+
+<script type="module">
+
+import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+
+const camera = new THREE.PerspectiveCamera(
+75,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias:true
+});
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+document.body.appendChild(renderer.domElement);
+
+const light = new THREE.DirectionalLight(
+0xffffff,
+2
+);
+
+light.position.set(10,20,10);
+scene.add(light);
+
+const ambient = new THREE.AmbientLight(
+0xffffff,
+1
+);
+
+scene.add(ambient);
+
+const ground = new THREE.Mesh(
+new THREE.PlaneGeometry(500,500),
+new THREE.MeshStandardMaterial({
+color:0x228b22
+})
+);
+
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+const player = new THREE.Object3D();
+player.position.y = 2;
+
+camera.position.set(0,2,0);
+
+player.add(camera);
+
+scene.add(player);
+
+const enemy = new THREE.Mesh(
+new THREE.BoxGeometry(2,4,2),
+new THREE.MeshStandardMaterial({
+color:0xff0000
+})
+);
+
+enemy.position.set(0,2,-30);
+
+scene.add(enemy);
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+    keys[e.key.toLowerCase()] = true;
+});
+
+document.addEventListener("keyup",e=>{
+    keys[e.key.toLowerCase()] = false;
+});
+
+document.addEventListener("click",()=>{
+
+    if(Math.abs(enemy.position.x - player.position.x) < 2 &&
+       Math.abs(enemy.position.z - player.position.z) < 50)
+    {
+        enemy.position.set(
+            (Math.random()-0.5)*100,
+            2,
+            -50 - Math.random()*100
+        );
+    }
+});
+
+function update(){
+
+    const speed = 0.2;
+
+    if(keys["z"])
+        player.position.z -= speed;
+
+    if(keys["s"])
+        player.position.z += speed;
+
+    if(keys["q"])
+        player.position.x -= speed;
+
+    if(keys["d"])
+        player.position.x += speed;
+
+    enemy.lookAt(player.position);
+
+}
+
+function animate(){
+
+    requestAnimationFrame(animate);
+
+    update();
+
+    renderer.render(
+    scene,
+    camera
+    );
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
